@@ -3,17 +3,17 @@ package com.company;
 public class Player {
 
     private String name;
-    private int points;
+    private double points;
 
     public Player(String name) {
         this.name = name;
     }
 
-    public void setPoints(int points) {
+    public void setPoints(double points) {
         this.points = points;
     }
 
-    public int getPoints() {
+    public double getPoints() {
         return this.points;
     }
 

@@ -114,7 +114,7 @@ public class BotState {
         try {
             switch(key) {
                 case "points":
-                    this.players.get(playerName).setPoints(Integer.parseInt(value));
+                    this.players.get(playerName).setPoints(Double.parseDouble(value));
                     break;
                 default:
                     System.err.println(String.format("Cannot parse %s data input with key '%s'", playerName, key));
