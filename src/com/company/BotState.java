@@ -80,21 +80,21 @@ public class BotState {
                     this.moveNr = Integer.parseInt(value);
                     break;
                 case "field":
-                    int[][] oldField = field.getRaw();
+//                    int[][] oldField = field.getRaw();
                     this.field.initField();
                     this.field.parseFromString(value);
-                    lastMove = null;
-                    for(int x=0; x<field.getColumns(); x++) {
-                        for(int y=0; y<field.getRows(); y++) {
-                            if (oldField[x][y] != field.get(x,y)) {
-                                if (field.get(x,y) == field.getOpponentId()) {
-                                    lastMove = new Move(x,y);
-                                    break;
-                                }
-                            }
-                        }
-                        if (lastMove != null) break;
-                    }
+//                    lastMove = null;
+//                    for(int x=0; x<field.getColumns(); x++) {
+//                        for(int y=0; y<field.getRows(); y++) {
+//                            if (oldField[x][y] != field.get(x,y)) {
+//                                if (field.get(x,y) == field.getOpponentId()) {
+//                                    lastMove = new Move(x,y);
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                        if (lastMove != null) break;
+//                    }
                     break;
                 default:
                     System.err.println(String.format("Cannot parse game data input with key '%s'", key));
@@ -144,5 +144,25 @@ public class BotState {
 
     public int getMoveNumber() {
         return moveNr;
+    }
+
+    public void parseGameDataLong(String[] parts) {
+        if (parts[2].equals("last_move")) {
+            if (parts[3].equals("place_move")) {
+                int x = Integer.parseInt(parts[5]);
+                int y = Integer.parseInt(parts[4]);
+                lastMove = new Move(x,y);
+            } else {
+                lastMove = null;
+            }
+        }
+    }
+
+    public Player getUs() {
+        return players.get("Player"+field.getMyId());
+    }
+
+    public Player getThem() {
+        return players.get("Player"+field.getOpponentId());
     }
 }
