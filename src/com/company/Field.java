@@ -81,7 +81,7 @@ public class Field {
         }
 
         moves.removeAll(koMoves);
-        
+
         return moves;
     }
 

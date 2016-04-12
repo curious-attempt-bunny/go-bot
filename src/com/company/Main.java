@@ -142,6 +142,8 @@ public class Main {
             }
         }
 
+        Move fillerMove = null;
+
         while(move == null && !availableMoves.isEmpty()) {
             int index = 0; //r.nextInt(availableMoves.size());
             Move candidate = availableMoves.get(index);
@@ -153,6 +155,8 @@ public class Main {
             if (desired && isSensible(f, candidate)) {
                 move = candidate;
                 break;
+            } else if (fillerMove == null && isFillerMove(f, candidate)) {
+                fillerMove = candidate;
             }
         }
 
@@ -160,21 +164,62 @@ public class Main {
             move = backupMove;
         }
 
+        if (move == null) {
+            move = fillerMove;
+        }
+
+
         lastMove = move;
 
         return move;
     }
 
-    private boolean isSensible(Field f, Move candidate) {
+    private boolean isFillerMove(Field f, Move candidate) {
         int usCount = 0;
+        int usAdjacentCount = 0;
         int themCount = 0;
-        for(int x = candidate.getX()-4; x<=candidate.getX()+4; x++) {
-            for (int y = candidate.getY() - 4; y <= candidate.getY() + 4; y++) {
+        int themAdjacentCount = 0;
+        for(int x = candidate.getX()-1; x<=candidate.getX()+1; x++) {
+            for (int y = candidate.getY() - 1; y <= candidate.getY() + 1; y++) {
                 if (x == candidate.getX() && y == candidate.getY()) {
                     continue;
                 }
 
-                if (x < 0 || x >= f.getColumns() || y < 0 || y >= f.getRows()) {
+                if (!(x < 0 || x >= f.getColumns() || y < 0 || y >= f.getRows())) {
+                    if (f.get(x,y) == f.getMyId()) {
+                        usCount++;
+                        if (x == candidate.getX() || y == candidate.getY()) {
+                            usAdjacentCount++;
+                        }
+                    } else if (f.get(x,y) == f.getOpponentId()) {
+                        themCount++;
+                        if (x == candidate.getX() || y == candidate.getY()) {
+                            themAdjacentCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (usCount > 0 && themCount > 0) {
+            if (usAdjacentCount > 0 && usAdjacentCount < 4) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isSensible(Field f, Move candidate) {
+        int usCount = 0;
+        int themCount = 0;
+        for(int x = candidate.getX()-1; x<=candidate.getX()+1; x++) {
+            for (int y = candidate.getY() - 1; y <= candidate.getY() + 1; y++) {
+                if (x == candidate.getX() && y == candidate.getY()) {
+                    continue;
+                }
+
+                if (!(x < 0 || x >= f.getColumns() || y < 0 || y >= f.getRows())) {
                     if (f.get(x,y) == f.getMyId()) {
                         usCount++;
                     } else if (f.get(x,y) == f.getOpponentId()) {
