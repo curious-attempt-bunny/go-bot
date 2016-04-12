@@ -24,7 +24,6 @@ public class Main {
         Move move = null;
 
         int[] inputs = new int[320];
-        int offset = 320/4;
         Field f = state.getField();
 
         availableMoves.remove(lastMove); // naive ko protection
@@ -80,6 +79,8 @@ public class Main {
             move = cornerPlay(16, 2, 16, 3, 15, 3);
         }
 
+        Move backupMove = null;
+
         if (move == null) {
             if (focus == null) {
                 Collections.shuffle(availableMoves);
@@ -99,14 +100,45 @@ public class Main {
 
             for (Move candidate : availableMoves) {
                 if (state.getField().isCaptureMove(candidate.getX(), candidate.getY())) {
-                    System.err.println("Capture move! " + candidate);
-                    move = candidate;
-                    break;
+                    backupMove = candidate;
+                    if (isDesired(inputs, f, candidate)) {
+                        System.err.println("Capture move! " + candidate);
+                        move = candidate;
+                        break;
+                    } else {
+                        System.err.println("Capture move is undesired: " + candidate);
+                    }
                 } else if (state.getField().isDefendMove(candidate.getX(), candidate.getY())) {
-                    System.err.println("Defend move! " + candidate);
-                    move = candidate;
-                    break;
+                    backupMove = candidate;
+                    if (isDesired(inputs, f, candidate)) {
+                        System.err.println("Defend move! " + candidate);
+                        move = candidate;
+                        break;
+                    } else {
+                        System.err.println("Defend move is undesired: " + candidate);
+                    }
                 }
+            }
+        }
+
+        if (backupMove != null) {
+            for(int y=0; y<19; y++) {
+                for(int x=0; x<19; x++) {
+                    int v = f.get(x,y);
+                    if (v == 0) {
+                        if (f.isCaptureMove(x,y)) {
+                            System.err.print("c");
+                        } else if (f.isDefendMove(x,y)) {
+                            System.err.print("d");
+                        } else {
+                            System.err.print(".");
+                        }
+                    } else {
+                        System.err.print(v);
+                    }
+                }
+                System.err.println();
+
             }
         }
 
@@ -115,32 +147,7 @@ public class Main {
             Move candidate = availableMoves.get(index);
             availableMoves.remove(index);
 
-            int i = 0;
-            for(int x = candidate.getX()-4; x<=candidate.getX()+4; x++) {
-                for(int y = candidate.getY()-4; y<=candidate.getY()+4; y++) {
-                    if (x == candidate.getX() && y == candidate.getY()) {
-                        continue;
-                    }
-
-//                    System.out.println((x-candidate.getX())+","+(y-candidate.getY())+" i "+i);
-                    if (x<0 || x>=f.getColumns() || y<0 || y>=f.getRows()) {
-                        inputs[i] = 0; // empty
-                        inputs[i + offset] = 0; // us
-                        inputs[i + 2*offset] = 0; // them
-                        inputs[i + 3*offset] = 1; // edge
-                    } else {
-                        int v = f.get(x,y);
-                        inputs[i] = (v == 0 ? 1 : 0); // empty
-                        inputs[i + offset] = (v == 1 ? 1 : 0); // us
-                        inputs[i + 2*offset] = (v == 2 ? 1 : 0); // them
-                        inputs[i + 3*offset] = 0; // edge
-                    }
-
-                    i++;
-                }
-            }
-
-            boolean desired = net.isDesired(inputs);
+            boolean desired = isDesired(inputs, f, candidate);
             System.err.println("Desired? " + desired + " for " + candidate);
 
             if (desired) {
@@ -149,9 +156,43 @@ public class Main {
             }
         }
 
+        if (move == null) {
+            move = backupMove;
+        }
+
         lastMove = move;
 
         return move;
+    }
+
+    private boolean isDesired(int[] inputs, Field f, Move candidate) {
+        int offset = 320/4;
+        int i = 0;
+        for(int x = candidate.getX()-4; x<=candidate.getX()+4; x++) {
+            for(int y = candidate.getY()-4; y<=candidate.getY()+4; y++) {
+                if (x == candidate.getX() && y == candidate.getY()) {
+                    continue;
+                }
+
+//                    System.out.println((x-candidate.getX())+","+(y-candidate.getY())+" i "+i);
+                if (x<0 || x>=f.getColumns() || y<0 || y>=f.getRows()) {
+                    inputs[i] = 0; // empty
+                    inputs[i + offset] = 0; // us
+                    inputs[i + 2*offset] = 0; // them
+                    inputs[i + 3*offset] = 1; // edge
+                } else {
+                    int v = f.get(x,y);
+                    inputs[i] = (v == 0 ? 1 : 0); // empty
+                    inputs[i + offset] = (v == 1 ? 1 : 0); // us
+                    inputs[i + 2*offset] = (v == 2 ? 1 : 0); // them
+                    inputs[i + 3*offset] = 0; // edge
+                }
+
+                i++;
+            }
+        }
+
+        return net.isDesired(inputs);
     }
 
     private Move cornerPlay(int x1, int y1, int x2, int y2, int x3, int y3) {
