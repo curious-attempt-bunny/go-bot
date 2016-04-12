@@ -150,7 +150,7 @@ public class Main {
             boolean desired = isDesired(inputs, f, candidate);
             System.err.println("Desired? " + desired + " for " + candidate);
 
-            if (desired) {
+            if (desired && isSensible(f, candidate)) {
                 move = candidate;
                 break;
             }
@@ -163,6 +163,33 @@ public class Main {
         lastMove = move;
 
         return move;
+    }
+
+    private boolean isSensible(Field f, Move candidate) {
+        int usCount = 0;
+        int themCount = 0;
+        for(int x = candidate.getX()-4; x<=candidate.getX()+4; x++) {
+            for (int y = candidate.getY() - 4; y <= candidate.getY() + 4; y++) {
+                if (x == candidate.getX() && y == candidate.getY()) {
+                    continue;
+                }
+
+                if (x < 0 || x >= f.getColumns() || y < 0 || y >= f.getRows()) {
+                    if (f.get(x,y) == f.getMyId()) {
+                        usCount++;
+                    } else if (f.get(x,y) == f.getOpponentId()) {
+                        themCount++;
+                    }
+                }
+            }
+        }
+
+        // don't fill in liberties (or I suppose defend with good eye shape...)
+        if (usCount >= 5 && themCount == 0) {
+            return false;
+        }
+
+        return true;
     }
 
     private boolean isDesired(int[] inputs, Field f, Move candidate) {
