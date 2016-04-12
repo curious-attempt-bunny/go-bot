@@ -39,7 +39,7 @@ public class BotParser {
             } else if(parts[0].equals("action")) {
                 if (parts[1].equals("move")) { /* move requested */
                     Move move = null;
-                    if (currentState.getLastMove() == null && currentState.getUs().getPoints() > 10 && currentState.getUs().getPoints() > currentState.getThem().getPoints()) {
+                    if (currentState.getLastMove() == null && currentState.getUs() != null && currentState.getThem() != null && currentState.getUs().getPoints() > 10 && currentState.getUs().getPoints() > currentState.getThem().getPoints()) {
                         System.err.println("Passing because they passed and " + currentState.getUs().getPoints()+" > "+currentState.getThem().getPoints());
                     } else {
                         move = this.bot.getMove(this.currentState, Integer.parseInt(parts[2]));
