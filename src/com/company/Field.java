@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Field {
     private int myId;
@@ -9,6 +10,8 @@ public class Field {
     private int cols;
 
     private int[][] field;
+
+    private List<Move> koMoves = new ArrayList<>();
 
     public Field() {}
 
@@ -31,12 +34,17 @@ public class Field {
      * @param String : input from engine
      */
     public void parseFromString(String s) {
+        koMoves.clear();
         s = s.replace(";", ",");
         String[] r = s.split(",");
         int counter = 0;
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 field[x][y] = Integer.parseInt(r[counter]);
+                if (field[x][y] == -1) {
+                    koMoves.add(new Move(x,y));
+                    field[x][y] = 0;
+                }
                 counter++;
             }
         }
@@ -72,6 +80,8 @@ public class Field {
             }
         }
 
+        moves.removeAll(koMoves);
+        
         return moves;
     }
 
